@@ -86,6 +86,10 @@ class BatchPredictionRequest(BaseModel):
         min_length=1,
         max_length=100,
     )
+class PreparationPlanRequest(BaseModel):
+    projected_demand: int = Field(ge=0)
+    recommended_prep: int = Field(ge=0)
+    demand_change: float = Field(default=0)  
 
 
 # =========================================================
@@ -312,3 +316,25 @@ def get_centers():
         )
 
     return centers.sort_values("center_id").to_dict(orient="records")
+# =========================================================
+# 12. APPLY PREPARATION PLAN
+# =========================================================
+
+last_applied_plan = None
+
+
+@app.post("/preparation-plan/apply")
+def apply_preparation_plan(request: PreparationPlanRequest):
+    global last_applied_plan
+
+    last_applied_plan = {
+        "projected_demand": request.projected_demand,
+        "recommended_prep": request.recommended_prep,
+        "demand_change": request.demand_change,
+    }
+
+    return {
+        "success": True,
+        "message": "Preparation plan applied successfully",
+        "plan": last_applied_plan,
+    }
